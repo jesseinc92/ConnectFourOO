@@ -6,13 +6,14 @@
  */
 
 class Game {
-  constructor(width, height) {
-    this.players = ['p1', 'p2'];
-    this.currPlayer = 'p1';
+  constructor(p1, p2, width = 7, height = 6) {
+    this.players = [p1, p2];
+    this.currPlayer = p1;
     this.width = width;
     this.height = height;
     this.makeBoard();
     this.makeHtmlBoard();
+    this.gameOver = false;
   }
 
   makeBoard() {
@@ -68,7 +69,8 @@ class Game {
   placeInTable(y, x) {
     const piece = document.createElement('div');
     piece.classList.add('piece');
-    piece.classList.add(`${this.currPlayer}`);
+    piece.classList.add(`${this.currPlayer.color}`);
+    piece.style.backgroundColor = `${this.currPlayer.color}`
     piece.style.top = -50 * (y + 2);
   
     const spot = document.getElementById(`${y}-${x}`);
@@ -77,6 +79,8 @@ class Game {
 
   endGame(msg) {
     alert(msg);
+    const top = document.querySelector('#column-top');
+    top.removeEventListener('click', this.handleGameClick);
   }
 
   handleClick(evt) {
@@ -95,11 +99,13 @@ class Game {
     
     // check for win
     if (this.checkForWin()) {
-      return this.endGame(`Player ${this.currPlayer} won!`);
+      this.gameOver = true;
+      return this.endGame(`Player ${this.currPlayer.color} won!`);
     }
     
     // check for tie
     if (this.board.every(row => row.every(cell => cell))) {
+      this.gameOver = true;
       return this.endGame('Tie!');
     }
       
@@ -139,4 +145,26 @@ class Game {
   }
 }
 
-const game1 = new Game(7, 6);
+class Player {
+  constructor(color) {
+    this.color = color;
+  }
+}
+
+// click the button to start/restart the game
+const startBtn = document.querySelector('button')
+const board = document.querySelector('#board');
+var game;
+
+startBtn.addEventListener('click', () => {
+  if (!game) {
+    let p1 = new Player(document.querySelector('#player1-color').value);
+    let p2 = new Player(document.querySelector('#player2-color').value);
+    game = new Game(p1, p2);
+  } else {
+    board.innerHTML = '';
+    let p1 = new Player(document.querySelector('#player1-color').value);
+    let p2 = new Player(document.querySelector('#player2-color').value);
+    game = new Game(p1, p2);
+  }
+});
